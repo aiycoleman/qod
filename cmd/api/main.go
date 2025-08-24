@@ -12,8 +12,9 @@ import (
 // signal that it is private (non-exportable) to the
 // main package
 type configuration struct {
-	port int
-	env  string
+	port    int
+	env     string
+	version string
 }
 
 type application struct {
@@ -27,13 +28,14 @@ func loadConfig() configuration {
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment(development|staging|production)")
+	flag.StringVar(&cfg.version, "version", "1.0.0", "Application version")
 	flag.Parse()
 
 	return cfg
 }
 
 // setupLogger configures the application logger based on environment
-func setupLogger(env string) *slog.Logger {
+func setupLogger() *slog.Logger {
 	var logger *slog.Logger
 
 	logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -52,7 +54,7 @@ func main() {
 
 	cfg := loadConfig()
 	// Initialize logger
-	logger := setupLogger(cfg.env)
+	logger := setupLogger()
 	// Initialize application with dependencies
 	app := &application{
 		config: cfg,
@@ -60,8 +62,7 @@ func main() {
 	}
 
 	// Run the application
-	app.serve()
-	if err != nil {
+	if err := app.serve(); err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
