@@ -20,6 +20,8 @@ func (app *application) serve() error {
 		ErrorLog:     slog.NewLogLogger(app.logger.Handler(), slog.LevelError),
 	}
 
+	// Log that the server is starting
 	app.logger.Info("starting server", "addr", srv.Addr, "env", app.config.env)
+
 	return srv.ListenAndServe()
 }

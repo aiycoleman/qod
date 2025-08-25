@@ -8,15 +8,16 @@ import (
 	"os"
 )
 
-// The 'configuration' type is lowercase to
-// signal that it is private (non-exportable) to the
-// main package
+// configuration holds all the runtime configuration settings for the app.
+// Private (non-exportable) to this package (lowercase "configuration")
 type configuration struct {
 	port    int
-	env     string
-	version string
+	env     string // Application environment
+	version string // Version number of the API
 }
 
+// Hold dependencies shared across handlers,
+// such as config and logger.
 type application struct {
 	config configuration
 	logger *slog.Logger
@@ -26,6 +27,7 @@ type application struct {
 func loadConfig() configuration {
 	var cfg configuration
 
+	// Register CLI flags and bind them to cfg fields.
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment(development|staging|production)")
 	flag.StringVar(&cfg.version, "version", "1.0.0", "Application version")
@@ -43,6 +45,7 @@ func setupLogger() *slog.Logger {
 	return logger
 }
 
+// printUB is a small test function, not used in production (testing).
 func printUB() string {
 	return "Hello, UB!"
 }
@@ -50,12 +53,12 @@ func printUB() string {
 func main() {
 	// greeting := printUB()
 	// fmt.Println(greeting)
-	// Initialize configuration
 
+	// Initialize configuration
 	cfg := loadConfig()
 	// Initialize logger
 	logger := setupLogger()
-	// Initialize application with dependencies
+	// Initialize application struc with dependencies
 	app := &application{
 		config: cfg,
 		logger: logger,

@@ -11,6 +11,8 @@ import (
 // routes specifies our routes
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
+
+	// Define a GET route for health check
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 
 	return router
