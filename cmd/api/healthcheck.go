@@ -11,9 +11,11 @@ import (
 func (app *application) healthcheckHandler(w http.ResponseWriter,
 	r *http.Request) {
 
+	var version string // Version number of the API
+
 	// Create a small JSON string with dynamic values from config
 	js := `{"status": "available", "environment": %q, "version": %q}`
-	js = fmt.Sprintf(js, app.config.env, app.config.version)
+	js = fmt.Sprintf(js, app.config.env, version)
 
 	// Content-Type is text/plain by default
 	// Tell the client the response is JSON (not plain text)

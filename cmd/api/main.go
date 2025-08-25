@@ -11,9 +11,9 @@ import (
 // configuration holds all the runtime configuration settings for the app.
 // Private (non-exportable) to this package (lowercase "configuration")
 type configuration struct {
-	port    int
-	env     string // Application environment
-	version string // Version number of the API
+	port int
+	env  string // Application environment
+
 }
 
 // Hold dependencies shared across handlers,
@@ -30,7 +30,6 @@ func loadConfig() configuration {
 	// Register CLI flags and bind them to cfg fields.
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment(development|staging|production)")
-	flag.StringVar(&cfg.version, "version", "1.0.0", "Application version")
 	flag.Parse()
 
 	return cfg
