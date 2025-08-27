@@ -5,7 +5,10 @@ import (
 	"net/http"
 )
 
-func (a *application) writeJSON(w http.ResponseWriter, status int, data any, headers http.Header) error {
+// create an envelope type
+type envelope map[string]any
+
+func (a *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
 	jsResponse, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
@@ -15,7 +18,6 @@ func (a *application) writeJSON(w http.ResponseWriter, status int, data any, hea
 	// additional  headers to be set
 	for key, value := range headers {
 		w.Header()[key] = value
-		// w.Header().Set(key, value[0])
 	}
 
 	// set content type header
