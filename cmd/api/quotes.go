@@ -1,4 +1,4 @@
-// Filename: cmd/api/comments.go
+// Filename: cmd/api/quotes.go
 package main
 
 import (
@@ -8,9 +8,9 @@ import (
 	_ "github.com/aiycoleman/qod/internal/data"
 )
 
-func (app *application) createCommentHandler(w http.ResponseWriter,
+func (app *application) createQuoteHandler(w http.ResponseWriter,
 	r *http.Request) {
-	// create a struct to hold a comment
+	// create a struct to hold a quote
 	// struct tags[“] to make the names display in lowercase
 	var incomingData struct {
 		Content string `json:"content"`
