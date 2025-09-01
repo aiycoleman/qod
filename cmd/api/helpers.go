@@ -37,6 +37,7 @@ func (a *application) writeJSON(w http.ResponseWriter, status int, data envelope
 	return nil
 }
 
+// ensures that there is nothing can affect our backend
 func (app *application) readJSON(w http.ResponseWriter, r *http.Request, destination any) error {
 	// max size of the request body(250KB reasonable)
 	maxBytes := 256_000
