@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	_ "github.com/aiycoleman/qod/internal/data"
+	"github.com/aiycoleman/qod/internal/data"
+	"github.com/aiycoleman/qod/internal/validator"
 )
 
 func (app *application) createQuoteHandler(w http.ResponseWriter,
@@ -20,6 +21,21 @@ func (app *application) createQuoteHandler(w http.ResponseWriter,
 	err := app.readJSON(w, r, &incomingData)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	quote := &data.Quote{
+		Content: incomingData.Content,
+		Author:  incomingData.Author,
+	}
+
+	// Initialize a Validator instance
+	v := validator.New()
+
+	// Do the validation
+	data.ValidateQuote(v, quote)
+	if !v.IsEmpty() {
+		app.failedValidationResponse(w, r, v.Errors) // implemented later
 		return
 	}
 
