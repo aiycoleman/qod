@@ -194,7 +194,26 @@ func (app *application) deleteQuoteHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) listQuotesHandler(w http.ResponseWriter, r *http.Request) {
-	quotes, err := app.quoteModel.GetAll()
+	var queryParametersData struct {
+		Content string
+		Author  string
+	}
+	// get the query parameters from the URL
+	queryParameters := r.URL.Query()
+
+	// Load the query parameters into our struct
+	queryParametersData.Content = app.getSingleQueryParameter(
+		queryParameters,
+		"content",
+		"")
+
+	queryParametersData.Author = app.getSingleQueryParameter(
+		queryParameters,
+		"author",
+		"")
+
+	quotes, err := app.quoteModel.GetAll(queryParametersData.Content,
+		queryParametersData.Author)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
