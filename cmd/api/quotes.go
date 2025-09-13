@@ -162,3 +162,33 @@ func (app *application) updateQuoteHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 }
+
+func (app *application) deleteQuoteHandler(w http.ResponseWriter, r *http.Request) {
+
+	id, err := app.readIDParam(r)
+
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.quoteModel.Delete(id)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// display the quote
+	data := envelope{"message": "quote successfully deleted"}
+	err = app.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+}

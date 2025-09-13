@@ -113,3 +113,38 @@ func (q QuoteModel) Update(quote *Quote) error {
 	return q.DB.QueryRowContext(ctx, query, args...).Scan(&quote.Version)
 
 }
+
+// Delete a specific Quote
+func (q QuoteModel) Delete(id int64) error {
+
+	// check if the id is valid
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	// the SQL query to be executed against the database table
+	query := `
+        DELETE FROM quotes
+        WHERE id = $1
+      `
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := q.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	// Check if any rows were delete
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
+
+}
