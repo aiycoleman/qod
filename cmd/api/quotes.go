@@ -94,3 +94,71 @@ func (app *application) displayQuoteHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 }
+
+// DEdit quotes
+func (app *application) updateQuoteHandler(w http.ResponseWriter, r *http.Request) {
+	// Get ID from the URL
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	// Call Get() to retrirve the comment with the specified ID
+	quote, err := app.quoteModel.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// temporary incoming data struct
+	var incomingData struct {
+		Content *string `json:"content"`
+		Author  *string `json:"author"`
+	}
+
+	// perform decoding
+	err = app.readJSON(w, r, &incomingData)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	// Check to see which fields need to be updated
+	// if  nill;, no update needed for any feild
+	if incomingData.Content != nil {
+		quote.Content = *incomingData.Content
+	}
+
+	if incomingData.Author != nil {
+		quote.Author = *incomingData.Author
+	}
+
+	// Validate
+	v := validator.New()
+	data.ValidateQuote(v, quote)
+	if !v.IsEmpty() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	// Add the quote to the database table
+	err = app.quoteModel.Update(quote)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	data := envelope{
+		"quote": quote,
+	}
+	err = app.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}

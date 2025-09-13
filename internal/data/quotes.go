@@ -69,7 +69,6 @@ func (q QuoteModel) Get(id int64) (*Quote, error) {
 		FROM quotes
 		WHERE id = $1
 		`
-
 	// Declare a variable of type Quote to store the returned comment
 	var quote Quote
 
@@ -94,4 +93,23 @@ func (q QuoteModel) Get(id int64) (*Quote, error) {
 	}
 
 	return &quote, nil
+}
+
+// Update a specific quote from the db
+func (q QuoteModel) Update(quote *Quote) error {
+	// The SQL query to be executed against the database table
+	// Every time we make an update, we increment the version number
+	query := `
+        UPDATE quotes
+        SET content = $1, author = $2, version = version + 1
+        WHERE id = $3
+        RETURNING version
+		`
+	// values to replace the $1 and $2
+	args := []any{quote.Content, quote.Author, quote.ID}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return q.DB.QueryRowContext(ctx, query, args...).Scan(&quote.Version)
+
 }
