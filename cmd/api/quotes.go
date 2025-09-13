@@ -192,3 +192,19 @@ func (app *application) deleteQuoteHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 }
+
+func (app *application) listQuotesHandler(w http.ResponseWriter, r *http.Request) {
+	quotes, err := app.quoteModel.GetAll()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	data := envelope{
+		"quotes": quotes,
+	}
+	err = app.writeJSON(w, http.StatusOK, data, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

@@ -69,7 +69,7 @@ func (q QuoteModel) Get(id int64) (*Quote, error) {
 		FROM quotes
 		WHERE id = $1
 		`
-	// Declare a variable of type Quote to store the returned comment
+	// Declare a variable of type Quote to store the returned quote
 	var quote Quote
 
 	// Set a 3-second context/timer
@@ -146,5 +146,46 @@ func (q QuoteModel) Delete(id int64) error {
 	}
 
 	return nil
+}
 
+// Get all quotes
+func (q QuoteModel) GetAll() ([]*Quote, error) {
+	query := `
+        SELECT id, created_at, content, author, version
+        FROM quotes
+        ORDER BY id
+    `
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := q.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	quotes := []*Quote{}
+
+	for rows.Next() {
+		var quote Quote
+		err := rows.Scan(
+			&quote.ID,
+			&quote.CreatedAt,
+			&quote.Content,
+			&quote.Author,
+			&quote.Version,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		quotes = append(quotes, &quote)
+	}
+
+	// check for errors from iterating over rows
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return quotes, nil
 }
