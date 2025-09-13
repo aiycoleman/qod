@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -56,6 +57,38 @@ func (app *application) createQuoteHandler(w http.ResponseWriter,
 	}
 
 	err = app.writeJSON(w, http.StatusCreated, data, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+// Displays quotes
+func (app *application) displayQuoteHandler(w http.ResponseWriter, r *http.Request) {
+	// get the id from the url
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	// Call Get(to retrieve data based on id)
+	quote, err := app.quoteModel.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// display quote
+	data := envelope{
+		"quote": quote,
+	}
+	err = app.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

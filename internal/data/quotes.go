@@ -4,6 +4,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/aiycoleman/qod/internal/validator"
@@ -37,7 +38,7 @@ type QuoteModel struct {
 
 // Insert a new row in the quotes table
 // A pointer to the quote
-func (c QuoteModel) Insert(quote *Quote) error {
+func (q QuoteModel) Insert(quote *Quote) error {
 	// SQL statement to be executed
 	query := `
 		INSERT INTO quotes (content, author)
@@ -52,5 +53,45 @@ func (c QuoteModel) Insert(quote *Quote) error {
 	defer cancel()
 
 	// execute query against the database
-	return c.DB.QueryRowContext(ctx, query, args...).Scan(&quote.ID, &quote.CreatedAt, &quote.Version)
+	return q.DB.QueryRowContext(ctx, query, args...).Scan(&quote.ID, &quote.CreatedAt, &quote.Version)
+}
+
+// Get a specific quote from the quote table
+func (q QuoteModel) Get(id int64) (*Quote, error) {
+	// check if the id is valid
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	// the SQL query to be executed against the database table
+	query := `
+		SELECT id, content, author, created_at, version
+		FROM quotes
+		WHERE id = $1
+		`
+
+	// Declare a variable of type Quote to store the returned comment
+	var quote Quote
+
+	// Set a 3-second context/timer
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := q.DB.QueryRowContext(ctx, query, id).Scan(&quote.ID,
+		&quote.Content,
+		&quote.Author,
+		&quote.CreatedAt,
+		&quote.Version)
+
+	// check for which type error
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &quote, nil
 }

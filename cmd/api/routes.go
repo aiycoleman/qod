@@ -17,11 +17,11 @@ func (app *application) routes() http.Handler {
 	router.NotFound = http.HandlerFunc(app.notFoundResponse)
 	// handle 405
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
-	// setup routes
 
 	// setup routes
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/quotes", app.createQuoteHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/quotes/:id", app.displayQuoteHandler)
 
 	return app.recoverPanic(router)
 }
