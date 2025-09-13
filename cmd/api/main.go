@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/aiycoleman/qod/internal/data"
 	_ "github.com/lib/pq"
 )
 
@@ -27,8 +28,9 @@ type configuration struct {
 // Hold dependencies shared across handlers,
 // such as config and logger.
 type application struct {
-	config configuration
-	logger *slog.Logger
+	config     configuration
+	logger     *slog.Logger
+	quoteModel data.QuoteModel
 }
 
 // loadConfig reads configuration from command line flags
@@ -107,8 +109,9 @@ func main() {
 
 	// Initialize application struc with dependencies
 	app := &application{
-		config: cfg,
-		logger: logger,
+		config:     cfg,
+		logger:     logger,
+		quoteModel: data.QuoteModel{DB: db},
 	}
 
 	// Run the application

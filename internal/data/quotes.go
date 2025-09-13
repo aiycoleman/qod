@@ -2,6 +2,8 @@
 package data
 
 import (
+	"context"
+	"database/sql"
 	"time"
 
 	"github.com/aiycoleman/qod/internal/validator"
@@ -26,4 +28,29 @@ func ValidateQuote(v *validator.Validator, quote *Quote) {
 	v.Check(len(quote.Content) <= 100, "content", "must not be more than 100 bytes long")
 	// check if the Author field is empty
 	v.Check(len(quote.Author) <= 25, "author", "must not be more than 25 bytes long")
+}
+
+// The QuoteModel expects a connection pool
+type QuoteModel struct {
+	DB *sql.DB
+}
+
+// Insert a new row in the quotes table
+// A pointer to the quote
+func (c QuoteModel) Insert(quote *Quote) error {
+	// SQL statement to be executed
+	query := `
+		INSERT INTO quotes (content, author)
+		VALUES ($1, $2)
+		RETURNING id, created_at, version
+		`
+	// values to replace the $1 and $2
+	args := []any{quote.Content, quote.Author}
+
+	// Context with a 3-second timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	// execute query against the database
+	return c.DB.QueryRowContext(ctx, query, args...).Scan(&quote.ID, &quote.CreatedAt, &quote.Version)
 }

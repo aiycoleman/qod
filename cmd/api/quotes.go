@@ -39,6 +39,25 @@ func (app *application) createQuoteHandler(w http.ResponseWriter,
 		return
 	}
 
-	// for now display the result
-	fmt.Fprintf(w, "%+v\n", incomingData)
+	// Add the quote to the database table
+	err = app.quoteModel.Insert(quote)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// Set a location header (the path to the newly created quote)
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/quotes/%d", quote.ID))
+
+	// Send a JSON response with 201 (new resource createed) status code
+	data := envelope{
+		"quote": quote,
+	}
+
+	err = app.writeJSON(w, http.StatusCreated, data, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }
