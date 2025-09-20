@@ -4,7 +4,7 @@ include .envrc
 .PHONY: run/api
 run/api:
 	@echo '--Running application--'
-	@go run ./cmd/api --port=$(PORT) --env=$(ENV) --db-dsn=$(QUOTES_DB_DSN)
+	@go run ./cmd/api --port=$(PORT) --env=$(ENV) --db-dsn=$(QUOTES_DB_DSN) --cors-trusted-origins="$(CORS_TRUSTED_ORIGINS)"
 
 ## db/sql:connect to the database using psql(terminal)
 .PHONY: db/psql
@@ -21,4 +21,4 @@ db/migrations/new:
 .PHONY: db/migrations/up
 db/migrations/up:
 	@echo 'Running up migrations...'
-	migrate -path ./migrations -database ${QUOTES_DB_DSN} up
+	migrate -path ./migrations -database $(QUOTES_DB_DSN) up

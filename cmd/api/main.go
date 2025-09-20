@@ -8,6 +8,7 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aiycoleman/qod/internal/data"
@@ -22,6 +23,9 @@ type configuration struct {
 	version string // Version number of the API
 	db      struct {
 		dsn string
+	}
+	cors struct {
+		trustedOrigins []string
 	}
 }
 
@@ -44,6 +48,13 @@ func loadConfig() configuration {
 
 	// Read in the dsn
 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://quotes:whyme@localhost/quotes", "PostgreSQL DSN")
+
+	// Allow us to access space-seperted origins.
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space seperated)",
+		func(val string) error {
+			cfg.cors.trustedOrigins = strings.Fields(val)
+			return nil
+		})
 
 	flag.Parse()
 

@@ -15,24 +15,22 @@ const html = `
 <head>
     <meta charset="UTF-8">
 </head>
-
 <body>
-    <h1>Quote CORS</h1>
-    <div id="output"></div>
+    <h1>Quotes CORS</h1>
+    <pre id="output"></pre>
+
     <script>
-         document.addEventListener('DOMContentLoaded', function() {
-         fetch("http://localhost:4000/v1/healthcheck")
-         .then(function (response) {
-                         response.text().then(function (text) {
-                         document.getElementById("output").innerHTML = text;
-                    });
-                },
-function(err) {
-                    document.getElementById("output").innerHTML = err;
-                }
-            );
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch("http://localhost:4000/v1/quotes")
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(err => {
+                    document.getElementById("output").textContent = "Error: " + err;
+                });
         });
-  </script>
+    </script>
 </body>
 </html>`
 
