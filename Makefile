@@ -4,7 +4,8 @@ include .envrc
 .PHONY: run/api
 run/api:
 	@echo '--Running application--'
-	@go run ./cmd/api --port=$(PORT) --env=$(ENV) --db-dsn=$(QUOTES_DB_DSN) --cors-trusted-origins="$(CORS_TRUSTED_ORIGINS)"
+	@go run ./cmd/api --port=$(PORT) --env=$(ENV) --db-dsn=$(QUOTES_DB_DSN) --cors-trusted-origins="$(CORS_TRUSTED_ORIGINS)" --limiter-burst=5 --limiter-rps=2 --limiter-enabled=true
+
 
 ## db/sql:connect to the database using psql(terminal)
 .PHONY: db/psql

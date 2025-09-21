@@ -24,6 +24,11 @@ type configuration struct {
 	db      struct {
 		dsn string
 	}
+	limiter struct {
+		rps     float64
+		burst   int
+		enabled bool
+	}
 	cors struct {
 		trustedOrigins []string
 	}
@@ -48,6 +53,12 @@ func loadConfig() configuration {
 
 	// Read in the dsn
 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://quotes:whyme@localhost/quotes", "PostgreSQL DSN")
+
+	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate Limiter maximum requests per second")
+
+	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 5, "Rate Limiter maximum burst")
+
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
 	// Allow us to access space-seperted origins.
 	flag.Func("cors-trusted-origins", "Trusted CORS origins (space seperated)",
