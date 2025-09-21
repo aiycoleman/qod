@@ -197,23 +197,32 @@ func (app *application) listQuotesHandler(w http.ResponseWriter, r *http.Request
 	var queryParametersData struct {
 		Content string
 		Author  string
+		data.Filters
 	}
 	// get the query parameters from the URL
 	queryParameters := r.URL.Query()
 
 	// Load the query parameters into our struct
-	queryParametersData.Content = app.getSingleQueryParameter(
-		queryParameters,
-		"content",
-		"")
+	queryParametersData.Content = app.getSingleQueryParameter(queryParameters, "content", "")
 
-	queryParametersData.Author = app.getSingleQueryParameter(
-		queryParameters,
-		"author",
-		"")
+	queryParametersData.Author = app.getSingleQueryParameter(queryParameters, "author", "")
+
+	// Validation instance
+	v := validator.New()
+
+	queryParametersData.Filters.Page = app.getSingleIntegerParameter(queryParameters, "page", 1, v)
+	queryParametersData.Filters.PageSize = app.getSingleIntegerParameter(queryParameters, "page_size", 10, v)
+
+	// Check if the filters are valid
+	data.ValidateFilters(v, queryParametersData.Filters)
+	if !v.IsEmpty() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
 
 	quotes, err := app.quoteModel.GetAll(queryParametersData.Content,
-		queryParametersData.Author)
+		queryParametersData.Author,
+		queryParametersData.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

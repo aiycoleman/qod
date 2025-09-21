@@ -149,7 +149,7 @@ func (q QuoteModel) Delete(id int64) error {
 }
 
 // Get all quotes
-func (q QuoteModel) GetAll(content string, author string) ([]*Quote, error) {
+func (q QuoteModel) GetAll(content string, author string, filters Filters) ([]*Quote, error) {
 	query := `
         SELECT id, created_at, content, author, version
         FROM quotes
@@ -158,11 +158,12 @@ func (q QuoteModel) GetAll(content string, author string) ([]*Quote, error) {
         AND (to_tsvector('simple', author) @@ 
              plainto_tsquery('simple', $2) OR $2 = '') 
         ORDER BY id
+		LIMIT $3 OFFSET $4
     `
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := q.DB.QueryContext(ctx, query, content, author)
+	rows, err := q.DB.QueryContext(ctx, query, content, author, filters.limit(), filters.offset())
 	if err != nil {
 		return nil, err
 	}
