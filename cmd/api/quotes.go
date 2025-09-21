@@ -212,6 +212,8 @@ func (app *application) listQuotesHandler(w http.ResponseWriter, r *http.Request
 
 	queryParametersData.Filters.Page = app.getSingleIntegerParameter(queryParameters, "page", 1, v)
 	queryParametersData.Filters.PageSize = app.getSingleIntegerParameter(queryParameters, "page_size", 10, v)
+	queryParametersData.Filters.Sort = app.getSingleQueryParameter(queryParameters, "sort", "id")
+	queryParametersData.Filters.SortSafeList = []string{"id", "author", "-id", "-author"}
 
 	// Check if the filters are valid
 	data.ValidateFilters(v, queryParametersData.Filters)
