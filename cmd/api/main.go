@@ -137,7 +137,8 @@ func main() {
 	}
 
 	// Run the application
-	if err := app.serve(); err != nil {
+	err = app.serve()
+	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
