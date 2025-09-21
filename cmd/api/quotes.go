@@ -220,7 +220,7 @@ func (app *application) listQuotesHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	quotes, err := app.quoteModel.GetAll(queryParametersData.Content,
+	quotes, metadata, err := app.quoteModel.GetAll(queryParametersData.Content,
 		queryParametersData.Author,
 		queryParametersData.Filters)
 	if err != nil {
@@ -229,7 +229,8 @@ func (app *application) listQuotesHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	data := envelope{
-		"quotes": quotes,
+		"quotes":    quotes,
+		"@metadata": metadata,
 	}
 	err = app.writeJSON(w, http.StatusOK, data, nil)
 	if err != nil {

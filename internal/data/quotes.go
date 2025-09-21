@@ -149,9 +149,9 @@ func (q QuoteModel) Delete(id int64) error {
 }
 
 // Get all quotes
-func (q QuoteModel) GetAll(content string, author string, filters Filters) ([]*Quote, error) {
+func (q QuoteModel) GetAll(content string, author string, filters Filters) ([]*Quote, Metadata, error) {
 	query := `
-        SELECT id, created_at, content, author, version
+        SELECT COUNT(*) OVER(), id, created_at, content, author, version
         FROM quotes
         WHERE (to_tsvector('simple', content) @@
               plainto_tsquery('simple', $1) OR $1 = '') 
@@ -165,15 +165,17 @@ func (q QuoteModel) GetAll(content string, author string, filters Filters) ([]*Q
 
 	rows, err := q.DB.QueryContext(ctx, query, content, author, filters.limit(), filters.offset())
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 	defer rows.Close()
+	totalRecords := 0
 
 	quotes := []*Quote{}
 
 	for rows.Next() {
 		var quote Quote
 		err := rows.Scan(
+			&totalRecords,
 			&quote.ID,
 			&quote.CreatedAt,
 			&quote.Content,
@@ -181,7 +183,7 @@ func (q QuoteModel) GetAll(content string, author string, filters Filters) ([]*Q
 			&quote.Version,
 		)
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		quotes = append(quotes, &quote)
@@ -189,8 +191,10 @@ func (q QuoteModel) GetAll(content string, author string, filters Filters) ([]*Q
 
 	// check for errors from iterating over rows
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
-	return quotes, nil
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return quotes, metadata, nil
 }
