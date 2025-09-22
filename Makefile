@@ -22,4 +22,4 @@ db/migrations/new:
 .PHONY: db/migrations/up
 db/migrations/up:
 	@echo 'Running up migrations...'
-	migrate -path ./migrations -database $(QUOTES_DB_DSN) up
+	migrate -path ./migrations -database ${QUOTES_DB_DSN} up

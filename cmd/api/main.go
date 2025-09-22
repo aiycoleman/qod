@@ -40,6 +40,7 @@ type application struct {
 	config     configuration
 	logger     *slog.Logger
 	quoteModel data.QuoteModel
+	userModel  data.UserModel
 }
 
 // loadConfig reads configuration from command line flags
@@ -134,6 +135,7 @@ func main() {
 		config:     cfg,
 		logger:     logger,
 		quoteModel: data.QuoteModel{DB: db},
+		userModel:  data.UserModel{DB: db},
 	}
 
 	// Run the application
